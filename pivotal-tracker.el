@@ -34,7 +34,6 @@
 ;;; Code:
 
 (require 'cl-lib)
-(require 'xml)
 (require 'url)
 (require 'json)
 (require 'magit-popup)
@@ -51,7 +50,7 @@
     :group 'pivotal
     :type 'string))
 
-(defconst pivotal-base-url "https://www.pivotaltracker.com/services/v3"
+(defconst pivotal-base-url "https://www.pivotaltracker.com/services/v5"
   "Format string to use when creating endpoint urls.")
 
 (defconst pivotal-states `("unstarted" "started" "finished" "delivered" "accepted" "rejected")
@@ -390,25 +389,6 @@ C-h m  show all keybindings"))
          pivotal-base-url
          (mapcar (lambda (part) (concat "/" part)) parts-of-url)))
 
-(defun pivotal-v5-url (&rest parts-of-url)
-  "Build a Pivotal API (v5) URL from PARTS-OF-URL."
-  (let ((v3-url (apply 'pivotal-url parts-of-url)))
-   (replace-regexp-in-string "/v3/" "/v5/" v3-url)))
-
-(defun pivotal-api (url method callback &optional xml-data)
-  "Access wrapper for the the Pivotal API.
-
-URL of the API endpoint
-HTTP METHOD to use
-CALLBACK func to handle request complete/fail
-
-Optionally provide XML-DATA to send to the API endpoint."
-  (let ((url-request-method method)
-        (url-request-data xml-data)
-        (url-request-extra-headers `(("X-TrackerToken" . ,pivotal-api-token)
-                                     ("Content-Type" . "application/xml"))))
-    (url-retrieve url callback)))
-
 (defun pivotal-clear-headers (buffer)
   "Clear Pivotal headers from the BUFFER."
   (mail-narrow-to-head)
@@ -462,7 +442,7 @@ CALLBACK func to handle request complete/fail"
 
 (defun pivotal-get-project-url (project-id)
   "Get the project URL (by PROJECT-ID)."
-  (replace-regexp-in-string "/services/v3/" "/n/"
+  (replace-regexp-in-string "/services/v5/" "/n/"
                             (pivotal-url
                              "projects" project-id)))
 
@@ -661,7 +641,7 @@ ESTIMATE the story points estimation."
 
 (defun pivotal-story-url-at-point (&optional position)
   "Get the story URL at POSITION."
-  (replace-regexp-in-string "/services/v3/" "/n/"
+  (replace-regexp-in-string "/services/v5/" "/n/"
                             (pivotal-url
                              "projects" *pivotal-current-project*
                              "stories" (pivotal-story-id-at-point position))))
